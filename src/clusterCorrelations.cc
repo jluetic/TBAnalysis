@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <fstream>
 #include "TROOT.h"
 #include "TStopwatch.h"
 #include "ClusterAnalysis.h"
@@ -11,6 +12,8 @@ using std::cerr;
 using std::endl;
 
 using namespace CommandLineProcessing;
+
+enum runType{VCTH,ANGLE};
 
 int main( int argc,char* argv[] ){
    
@@ -28,7 +31,7 @@ int main( int argc,char* argv[] ){
     exit(1);
   }
 
-  std::string inFilename = ( cmd.foundOption( "iFile" ) ) ? cmd.optionValue( "iFile" ) : "AnalysisTree_574.root";
+  std::string inFilename = ( cmd.foundOption( "iFile" ) ) ? cmd.optionValue( "iFile" ) : "dummy.txt";
   
   if ( inFilename.empty() ) {
     std::cerr << "Error, no input file provided. Quitting" << std::endl;
@@ -40,14 +43,24 @@ int main( int argc,char* argv[] ){
     std::cerr << "Error, no output filename provided. Quitting" << std::endl;
     exit( 1 );
   }
-  
   //Let's roll
   TStopwatch timer;
   timer.Start();
-  ClusterAnalysis r(inFilename,outFilename);
-  std::cout << "Event Loop start" << std::endl;
-  r.eventLoop();
-  r.endJob();
+
+  //Read the txt file
+  string in;
+  int voltage, stubWindow, vcth, rt;
+  //runType rt;
+  double angle;
+  std::fstream inFile(inFilename);
+  while(inFile >> in >> rt >> stubWindow >> vcth >> voltage){
+	cout << "Running on file:" << in << endl;
+  	cout << "Run data - type: " << rt << ", stub window: " << stubWindow << ", VCTH: " << vcth << ", bias voltage: " << voltage << endl;
+	ClusterAnalysis r(in,outFilename);
+	std::cout << "Event Loop start" << std::endl;
+	r.eventLoop();
+	r.endJob();
+  }
   timer.Stop();
   cout << "Realtime/CpuTime = " << timer.RealTime() << "/" << timer.CpuTime() << endl;
   return 0;

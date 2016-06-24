@@ -65,7 +65,7 @@ void ClusterAnalysis::eventLoop()
      Long64_t ientry = analysisTree()->GetEntry(jentry);
      //std::cout << "Chain load status=" << ientry << std::endl;
      if (ientry < 0) break;
-     if (jentry%1000 == 0) {
+     if (jentry%10000 == 0) {
        cout << " Events processed. " << std::setw(8) << jentry 
 	    << endl;
      }

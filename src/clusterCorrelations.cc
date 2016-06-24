@@ -10,10 +10,19 @@
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::to_string;
 
 using namespace CommandLineProcessing;
 
 enum runType{VCTH,ANGLE};
+typedef struct{
+	string type;
+	string inFile;
+	string angle;
+	int EDMRun, telescopeRun; 
+	int vcth, biasVoltage, stubWindow, DAQRun;
+} runInfo;
+
 
 int main( int argc,char* argv[] ){
    
@@ -31,7 +40,7 @@ int main( int argc,char* argv[] ){
     exit(1);
   }
 
-  std::string inFilename = ( cmd.foundOption( "iFile" ) ) ? cmd.optionValue( "iFile" ) : "dummy.txt";
+  std::string inFilename = ( cmd.foundOption( "iFile" ) ) ? cmd.optionValue( "iFile" ) : "runlists/run_list_cnm_module.txt";
   
   if ( inFilename.empty() ) {
     std::cerr << "Error, no input file provided. Quitting" << std::endl;
@@ -48,15 +57,19 @@ int main( int argc,char* argv[] ){
   timer.Start();
 
   //Read the txt file
-  string in;
-  int voltage, stubWindow, vcth, rt;
-  //runType rt;
-  double angle;
+  runInfo rInfo;
   std::fstream inFile(inFilename);
-  while(inFile >> in >> rt >> stubWindow >> vcth >> voltage){
-	cout << "Running on file:" << in << endl;
-  	cout << "Run data - type: " << rt << ", stub window: " << stubWindow << ", VCTH: " << vcth << ", bias voltage: " << voltage << endl;
-	ClusterAnalysis r(in,outFilename);
+  if (!inFile.good()) {
+  	cout << "Input file not good." << endl;
+	exit(1);
+  }
+
+  while(inFile >> rInfo.type >> rInfo.inFile >> rInfo.EDMRun >> rInfo.telescopeRun >> rInfo.angle >> std::hex >> rInfo.vcth >> std::dec >> rInfo.biasVoltage >> rInfo.stubWindow >> rInfo.DAQRun){
+	cout << "Running on file:" << rInfo.inFile << endl;
+  	cout << "Run data -> type: " << rInfo.type << ", EDM: " << rInfo.EDMRun << ", stub window: " << rInfo.stubWindow << ", VCTH: " << rInfo.vcth << ", bias voltage: " << rInfo.biasVoltage << ", Telescope run: " << rInfo.telescopeRun << ", DAQ run: " << rInfo.DAQRun << endl;
+	outFilename = "Results/"+rInfo.type+"_"+to_string(rInfo.EDMRun)+"_"+to_string(rInfo.biasVoltage)+"_"+rInfo.angle+"_"+to_string(rInfo.stubWindow)+"_"+to_string(rInfo.vcth)+".root";	
+	cout << outFilename << endl;
+	ClusterAnalysis r("root://eoscms//eos/cms/store/group/upgrade/Tracker/TestBeam/BTMay2016/AnalysisTuple/"+rInfo.inFile,outFilename);
 	std::cout << "Event Loop start" << std::endl;
 	r.eventLoop();
 	r.endJob();

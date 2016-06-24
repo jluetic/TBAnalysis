@@ -112,10 +112,12 @@ void Histogrammer::closeFile() {
 void Histogrammer::fillClusterCorrHistograms( std::vector<tbeam::cluster>& cvec0, std::vector<tbeam::cluster>& cvec1, const char* col) {
   fout_->cd("ClusterCorr");
   TString c(col);
-  Utility::fillHist1D( "nClusters", cvec0.size() );
-  Utility::fillHist1D( "nClusters", cvec1.size() );
-  Utility::fillHist1D( "delta_clusterPos", cvec0[0].x-cvec1[0].x );
-  Utility::fillHist2D( "clusterPosition", cvec0[0].x-127, cvec1[0].x-127 );
+	 if(cvec0.size()>0 && cvec1.size()>0){
+	  Utility::fillHist1D( "nClusters", cvec0.size() );
+	  Utility::fillHist1D( "nClusters", cvec1.size() );
+	  Utility::fillHist1D( "delta_clusterPos", cvec0[0].x-cvec1[0].x );
+	  Utility::fillHist2D( "clusterPosition", cvec0[0].x-127, cvec1[0].x-127 );
+	}
 }
 void Histogrammer::fillClusterHistograms( const char* det, std::vector<tbeam::cluster>& cvec, 
                                           const char* col) {

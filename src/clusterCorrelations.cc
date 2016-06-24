@@ -40,7 +40,7 @@ int main( int argc,char* argv[] ){
     exit(1);
   }
 
-  std::string inFilename = ( cmd.foundOption( "iFile" ) ) ? cmd.optionValue( "iFile" ) : "runlists/run_list_cnm_module.txt";
+  std::string inFilename = ( cmd.foundOption( "iFile" ) ) ? cmd.optionValue( "iFile" ) : "runlists/run_list_irr_module.txt";
   
   if ( inFilename.empty() ) {
     std::cerr << "Error, no input file provided. Quitting" << std::endl;

@@ -54,15 +54,21 @@ void ClusterAnalysis::eventLoop()
    cout << "#Events=" << nEntries_ << endl;
    hist_->fillHist1D("EventInfo","nevents", nEntries_);
 
+   double angle = static_cast<double>(condEv()->DUTangle)>100 ? (static_cast<double>(condEv()->DUTangle)-999000.)/10.-5. : static_cast<double>(condEv()->DUTangle+5.);
+
    std::cout << "CBC configuration:: SW=" << stubWindow()
              << "\tCWD=" << cbcClusterWidth()
              << "\tOffset1="<< cbcOffset1() 
-             << "\tOffset2" << cbcOffset2()
+             << "\tOffset2=" << cbcOffset2()
+             << "\tAngle=" << angle
+			 << "\t Tilt=" << static_cast<unsigned long int>(condEv()->tilt)
    << std::endl;
  
    for (Long64_t jentry=0; jentry<nEntries_;jentry++) {
-     //for (Long64_t jentry=0; jentry<50;jentry++) {
-     Long64_t ientry = analysisTree()->GetEntry(jentry);
+	 clearEvent();   
+  //for (Long64_t jentry=0; jentry<50;jentry++) {
+//     cout << "running over entry:  " << jentry << endl;
+	Long64_t ientry = analysisTree()->GetEntry(jentry);
      //std::cout << "Chain load status=" << ientry << std::endl;
      if (ientry < 0) break;
      if (jentry%10000 == 0) {
@@ -72,7 +78,7 @@ void ClusterAnalysis::eventLoop()
      //cout << "Point 1" << endl;
      if(jentry==0) {
        hist_->fillHist1D("EventInfo","hvSettings", condEv()->HVsettings);
-       hist_->fillHist1D("EventInfo","dutAngle", condEv()->DUTangle);
+       hist_->fillHist1D("EventInfo","dutAngle", angle);
        hist_->fillHist1D("EventInfo","vcth", condEv()->vcth);
        hist_->fillHist1D("EventInfo","offset", cbcOffset1());
        hist_->fillHist1D("EventInfo","offset", cbcOffset2());
@@ -82,21 +88,17 @@ void ClusterAnalysis::eventLoop()
      hist_->fillHist1D("EventInfo","isPeriodic",isPeriodic());
      hist_->fillHist1D("EventInfo","isGoodFlag",isGoodEvent());
 
-     if(!isGoodEvent() || dutRecoClmap()->at("det0C0").size()>1 || dutRecoClmap()->at("det1C0").size()>1 )   continue;
-
-     //hist_->fillHist1D("EventInfo","condData", condEv()->condData);
-     //hist_->fillHist1D("EventInfo","tdcPhase", static_cast<unsigned int>(condEv()->tdcPhase));
+       if(!isGoodEvent()){continue;}
       
-      //cout << "Point 2" << endl;
       setDetChannelVectors();
-      
+      if(dutRecoClmap()->at("det0C0").size()!=1 || dutRecoClmap()->at("det1C0").size()!=1 ) {  continue;}      
+      if(dutRecoClmap()->at("det0C0")[0].size>1 || dutRecoClmap()->at("det1C0")[0].size>1 ) {  continue;}		
+//      if(dutRecoClmap()->at("det0C0")[0].x-127<40 || dutRecoClmap()->at("det1C0")[0].x-127>87 ) {  continue;}
       const auto& d0c0 = *det0C0();
       const auto& d0c1 = *det0C1();
       const auto& d1c0 = *det1C0();
-      const auto& d1c1 = *det1C1();      
-	  hist_->fillClusterCorrHistograms(dutRecoClmap()->at("det0C0"),dutRecoClmap()->at("det1C0"),"C0");
-      //cout << "Point 3" << endl;
-      //Fill histo for det0
+      const auto& d1c1 = *det1C1();     
+      hist_->fillClusterCorrHistograms(dutRecoClmap()->at("det0C0"),dutRecoClmap()->at("det1C0"),"C0");
       hist_->fillHist1D("det0","chsizeC0", d0c0.size());
       hist_->fillHistofromVec(d0c0,"det0","hitmapC0");
       hist_->fill2DHistofromVec(d0c0,d0c1,"det0","hitmapfull");
@@ -120,7 +122,6 @@ void ClusterAnalysis::eventLoop()
       hist_->fillHist1D("Correlation","nclusterdiffC0", dutRecoClmap()->at("det1C0").size() - 
                                                      dutRecoClmap()->at("det1C0").size()); 
 	  
-      clearEvent();
    }
 }
 

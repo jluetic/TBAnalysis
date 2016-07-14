@@ -80,7 +80,7 @@ void Histogrammer::bookClusterCorrHistograms() {
   fout_->cd("ClusterCorr");
 
   new TH1I("nClusters","nClusters",20,-0.5,19.5);
-  new TH1D("delta_clusterPos","Cluster position difference;#Delta strips;#Events",19,0,19);
+  new TH1D("delta_clusterPos","Cluster position difference;#Delta strips;#Events",200,0,200);
   new TH2D("clusterPosition","Cluster Position;DUT0 cluster position;DUT1 cluster position",127,-0.5,126.5,127,-0.5,126.5);
 }
 
@@ -112,12 +112,10 @@ void Histogrammer::closeFile() {
 void Histogrammer::fillClusterCorrHistograms( std::vector<tbeam::cluster>& cvec0, std::vector<tbeam::cluster>& cvec1, const char* col) {
   fout_->cd("ClusterCorr");
   TString c(col);
-	 if(cvec0.size()>0 && cvec1.size()>0){
-	  Utility::fillHist1D( "nClusters", cvec0.size() );
-	  Utility::fillHist1D( "nClusters", cvec1.size() );
-	  Utility::fillHist1D( "delta_clusterPos", cvec0[0].x-cvec1[0].x );
-	  Utility::fillHist2D( "clusterPosition", cvec0[0].x-127, cvec1[0].x-127 );
-	}
+  Utility::fillHist1D( "nClusters", cvec0.size() );
+  Utility::fillHist1D( "nClusters", cvec1.size() );
+  Utility::fillHist1D( "delta_clusterPos", std::abs(cvec0[0].x-cvec1[0].x) );
+  Utility::fillHist2D( "clusterPosition", cvec0[0].x-127, cvec1[0].x-127 );
 }
 void Histogrammer::fillClusterHistograms( const char* det, std::vector<tbeam::cluster>& cvec, 
                                           const char* col) {
